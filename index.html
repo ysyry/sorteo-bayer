@@ -270,7 +270,7 @@
       estado.vendidos = {}; r.vendidos.forEach(function (n) { estado.vendidos[n] = true; });
       sel = sel.filter(function (n) { return !estado.vendidos[n]; });
       $('cargando').classList.add('oculto');
-      pintarGrupos(); if (grupoActivo) pintarGrilla(); pintarBarra();
+      refrescar();
       if (cb) cb();
     }, function (e) { $('cargando').textContent = 'No se pudo cargar. Revisá la conexión y volvé a abrir la página.'; });
   }
@@ -305,10 +305,28 @@
     estado.grupos.forEach(function (g) {
       var b = document.createElement('button');
       b.className = 'grupo' + (grupoActivo && grupoActivo[0] === g[0] ? ' activo' : '');
-      b.innerHTML = '<span><b>' + g[0] + '</b><br><small>números ' + g[1] + ' al ' + g[2] + '</small></span><small>quedan ' + quedan(g) + '</small>';
+      b.innerHTML = '<span><b>' + g[0] + '</b><br><small>números ' + g[1] + ' al ' + g[2] + '</small></span><small class="quedan">quedan ' + quedan(g) + '</small>';
       b.onclick = function () { grupoActivo = g; pintarGrupos(); pintarGrilla(); $('zonaNumeros').classList.remove('oculto'); $('resultado').textContent = ''; setTimeout(function () { $('zonaNumeros').scrollIntoView({ behavior: 'smooth' }); }, 50); };
       cont.appendChild(b);
     });
+  }
+  // Actualiza lo que ya está dibujado sin rearmarlo (así la pantalla no salta).
+  function refrescar() {
+    var botones = $('grupos').children;
+    if (botones.length !== estado.grupos.length) pintarGrupos();
+    else estado.grupos.forEach(function (g, i) {
+      var q = botones[i].querySelector('.quedan'); if (q) q.textContent = 'quedan ' + quedan(g);
+    });
+    if (grupoActivo) {
+      if (!$('n' + grupoActivo[1])) pintarGrilla();
+      else for (var n = grupoActivo[1]; n <= grupoActivo[2]; n++) {
+        var b = $('n' + n), v = !!estado.vendidos[n];
+        b.classList.toggle('vend', v);
+        b.classList.toggle('sel', sel.indexOf(n) >= 0);
+        b.disabled = v;
+      }
+    }
+    pintarBarra();
   }
   function pintarGrilla(destacar) {
     var g = grupoActivo, cont = $('grilla'); cont.innerHTML = '';
@@ -422,7 +440,7 @@
       sel = sel.filter(function (n) { return r.ocupados.indexOf(n) < 0; });
       var e = $('error'); e.classList.remove('oculto');
       e.textContent = (r.ocupados.length === 1 ? 'El número ' : 'Los números ') + lista(r.ocupados) + (r.ocupados.length === 1 ? ' se vendió' : ' se vendieron') + ' recién. Tocá "Corregir algo" y elegí otro.';
-      pintarGrupos(); if (grupoActivo) pintarGrilla(); pintarBarra();
+      refrescar();
     }, function (err) {
       b.disabled = false; b.textContent = 'Sí, guardar la venta';
       var e = $('error'); e.classList.remove('oculto');
