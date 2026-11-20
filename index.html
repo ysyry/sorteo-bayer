@@ -33,11 +33,11 @@
   }
   .wrap { max-width: 560px; margin: 0 auto; padding: 18px 16px 140px; }
 
-  header { text-align: left; margin: 6px 0 18px; }
-  .titulo { font-family: 'Permanent Marker', cursive; font-size: 2.1rem; line-height: 1.02; margin: 0; }
-  .titulo span { background: linear-gradient(100deg, transparent 2%, var(--amarillo) 4% 96%, transparent 98%); padding: 0 .15em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-  .fecha { font-family: 'Permanent Marker', cursive; color: var(--violeta); font-size: 1.15rem; margin: 8px 0 0; }
-  .sub { font-family: 'Gloria Hallelujah', cursive; color: var(--rojo); font-size: 1.05rem; margin: 2px 0 0; }
+  header { text-align: left; margin: 10px 0 22px; }
+  .titulo { font-family: 'Permanent Marker', cursive; font-size: 2.1rem; line-height: 1.3; letter-spacing: .02em; margin: 0; }
+  .titulo span { background: linear-gradient(100deg, transparent 2%, var(--amarillo) 4% 96%, transparent 98%); padding: .02em .2em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .fecha { font-family: 'Permanent Marker', cursive; color: var(--violeta); font-size: 1.15rem; letter-spacing: .03em; margin: 14px 0 0; }
+  .sub { font-family: 'Gloria Hallelujah', cursive; color: var(--rojo); font-size: 1.05rem; line-height: 1.5; margin: 6px 0 0; }
 
   .pasos { display: flex; gap: 6px; margin: 4px 0 14px; }
   .pasos i { flex: 1; height: 8px; border-radius: 4px; background: var(--gris); }
@@ -129,7 +129,7 @@
   <header>
     <h1 class="titulo">SORTEO DE <span>FIN DE AÑO</span></h1>
     <p class="fecha">SÁBADO 12 DE DICIEMBRE</p>
-    <p class="sub">venta de números · bono 2 x $10.000</p>
+    <p class="sub">venta de números · <span style="white-space:nowrap">bono 2 x $10.000</span></p>
   </header>
 
   <div class="pasos" id="pasos"><i></i><i></i><i></i><i></i><i></i></div>
@@ -190,11 +190,11 @@
       </div>
       <div class="aviso">Pedile que en el <b>concepto</b> de la transferencia ponga: <b>SORTEO + su nombre</b>.</div>
       <label class="foto" id="fotoLabel">
-        📷 Tocá acá para sacar o elegir la foto del comprobante
+        📷 Foto del comprobante <span style="font-weight:400">(opcional)</span>
         <input type="file" id="foto" accept="image/*">
         <img id="fotoPrev" class="oculto" alt="Comprobante">
       </label>
-      <p class="ayuda" style="margin-top:8px">Si no la tenés ahora, podés seguir sin foto.</p>
+      <p class="ayuda" style="margin-top:8px">No es obligatoria: si no la tenés, tocá "Siguiente" igual.</p>
     </div>
     <button class="btn btn-principal" id="ir5" disabled>Siguiente</button>
     <button class="btn-link btn" id="volver3">← Volver</button>
