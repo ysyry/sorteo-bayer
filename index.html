@@ -98,6 +98,15 @@
   .pago .ico { font-size: 1.8rem; }
   .pago.activo { border-color: var(--violeta); background: #F6EAF7; box-shadow: inset 0 0 0 2px var(--violeta); }
   .aviso { background: var(--amarillo-claro); border: 2px dashed var(--amarillo); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: .98rem; }
+  .cuenta { background: #F6EAF7; border: 2px solid var(--violeta); border-radius: 14px; padding: 14px; margin-top: 14px; }
+  .cuenta-tit { margin: 0 0 8px; font-weight: 700; color: var(--violeta); }
+  .dato { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+  .dato span { display: flex; flex-direction: column; min-width: 0; }
+  .dato small { color: var(--suave); font-size: .85rem; }
+  .dato b { font-size: 1.15rem; word-break: break-all; }
+  .copiar { font: inherit; font-weight: 700; font-size: 1rem; padding: 10px 14px; border-radius: 10px; border: 2px solid var(--violeta); background: var(--violeta); color: #fff; cursor: pointer; flex-shrink: 0; }
+  .copiar.hecho { background: var(--verde); border-color: var(--verde); }
+  .cuenta-cc { margin: 8px 0 0; color: var(--suave); font-size: .9rem; }
   .foto { display: block; text-align: center; border: 3px dashed var(--violeta); border-radius: 16px; padding: 22px 14px; margin-top: 12px; cursor: pointer; font-weight: 700; color: var(--violeta); background: #fff; font-size: 1.1rem; }
   .foto input { display: none; }
   .foto img { max-width: 100%; max-height: 220px; border-radius: 10px; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
@@ -173,6 +182,12 @@
       <button class="pago" data-pago="Efectivo"><span class="ico">💵</span>Efectivo</button>
     </div>
     <div id="zonaTransfer" class="oculto">
+      <div class="cuenta">
+        <p class="cuenta-tit">Datos para transferir · Biblioteca Bayer</p>
+        <div class="dato"><span><small>Alias</small><b>eventos.biblio.bayer</b></span><button class="copiar" data-copiar="eventos.biblio.bayer">Copiar</button></div>
+        <div class="dato"><span><small>CBU</small><b>0970006213001101730061</b></span><button class="copiar" data-copiar="0970006213001101730061">Copiar</button></div>
+        <p class="cuenta-cc">Cuenta corriente 6-110173/6</p>
+      </div>
       <div class="aviso">Pedile que en el <b>concepto</b> de la transferencia ponga: <b>SORTEO + su nombre</b>.</div>
       <label class="foto" id="fotoLabel">
         📷 Tocá acá para sacar o elegir la foto del comprobante
@@ -391,6 +406,23 @@
       $('ir5').disabled = false;
     };
   });
+  Array.prototype.forEach.call(document.querySelectorAll('.copiar'), function (b) {
+    b.onclick = function () {
+      var texto = b.getAttribute('data-copiar');
+      var listo = function () {
+        b.textContent = '¡Copiado!'; b.classList.add('hecho');
+        setTimeout(function () { b.textContent = 'Copiar'; b.classList.remove('hecho'); }, 2000);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(listo, function () { copiarViejo(texto); listo(); });
+      } else { copiarViejo(texto); listo(); }
+    };
+  });
+  function copiarViejo(texto) {
+    var t = document.createElement('textarea'); t.value = texto; t.setAttribute('readonly', '');
+    t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t);
+    t.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(t);
+  }
   $('foto').onchange = function (e) {
     var f = e.target.files[0]; if (!f) return;
     var lector = new FileReader();
