@@ -170,6 +170,8 @@
     <input type="text" id="comprador" autocomplete="off" placeholder="Ej: María Pérez">
     <label for="telefono">Teléfono</label>
     <input type="tel" id="telefono" inputmode="tel" autocomplete="off" placeholder="Ej: 294 455-1234">
+    <label for="mail">Mail <span style="font-weight:400;color:var(--suave)">(opcional)</span></label>
+    <input type="email" id="mail" inputmode="email" autocomplete="off" placeholder="Ej: maria@gmail.com">
     <button class="btn btn-principal" id="ir4">Siguiente</button>
     <button class="btn-link btn" id="volver2">← Volver a los números</button>
   </section>
@@ -184,9 +186,9 @@
     <div id="zonaTransfer" class="oculto">
       <div class="cuenta">
         <p class="cuenta-tit">Datos para transferir · Biblioteca Bayer</p>
-        <div class="dato"><span><small>Alias</small><b>eventos.biblio.bayer</b></span><button class="copiar" data-copiar="eventos.biblio.bayer">Copiar</button></div>
-        <div class="dato"><span><small>CBU</small><b>0970006213001101730061</b></span><button class="copiar" data-copiar="0970006213001101730061">Copiar</button></div>
-        <p class="cuenta-cc">Cuenta corriente 6-110173/6</p>
+        <div class="dato"><span><small>Alias</small><b>bolso.pie.yerba</b></span><button class="copiar" data-copiar="bolso.pie.yerba">Copiar</button></div>
+        <div class="dato"><span><small>CBU</small><b>0970006213001101730016</b></span><button class="copiar" data-copiar="0970006213001101730016">Copiar</button></div>
+        <p class="cuenta-cc">Banco Provincia del Neuquén · Cta. corriente Nº 6-110173/1<br>Titular: Biblioteca Popular Osvaldo Bayer · CUIT 30-67583430-6</p>
       </div>
       <div class="aviso">Pedile que en el <b>concepto</b> de la transferencia ponga: <b>SORTEO + su nombre</b>.</div>
       <label class="foto" id="fotoLabel">
@@ -209,6 +211,7 @@
       <tr><td>Total</td><td><div class="total" id="rTotal"></div></td></tr>
       <tr><td>Compra</td><td id="rComp"></td></tr>
       <tr><td>Teléfono</td><td id="rTel"></td></tr>
+      <tr id="filaMail"><td>Mail</td><td id="rMail" style="word-break:break-all"></td></tr>
       <tr><td>Pago</td><td id="rPago"></td></tr>
       <tr><td>Vende</td><td id="rVend"></td></tr>
     </table>
@@ -446,6 +449,8 @@
     $('rTotal').textContent = pesos(sel.length * estado.precio);
     $('rComp').textContent = $('comprador').value.trim();
     $('rTel').textContent = $('telefono').value.trim();
+    $('rMail').textContent = $('mail').value.trim();
+    $('filaMail').classList.toggle('oculto', !$('mail').value.trim());
     $('rPago').textContent = pago + (pago === 'Transferencia al alias' ? (fotoData ? ' (con comprobante)' : ' (sin comprobante)') : '');
     $('rVend').textContent = $('vendedor').value.trim();
     $('error').classList.add('oculto');
@@ -458,7 +463,7 @@
   $('guardar').onclick = function () {
     var b = $('guardar'); b.disabled = true; b.textContent = 'Guardando…';
     llamar('registrarVenta', {
-      vendedor: $('vendedor').value.trim(), comprador: $('comprador').value.trim(), telefono: $('telefono').value.trim(),
+      vendedor: $('vendedor').value.trim(), comprador: $('comprador').value.trim(), telefono: $('telefono').value.trim(), mail: $('mail').value.trim(),
       numeros: sel.slice(), pago: pago, archivo: fotoData ? { data: fotoData } : null
     }, function (r) {
       b.disabled = false; b.textContent = 'Sí, guardar la venta';
@@ -483,7 +488,7 @@
   // ---- otra venta
   $('otra').onclick = function () {
     sel = []; pago = ''; fotoData = '';
-    $('comprador').value = ''; $('telefono').value = ''; $('buscar').value = ''; $('resultado').textContent = '';
+    $('comprador').value = ''; $('telefono').value = ''; $('mail').value = ''; $('buscar').value = ''; $('resultado').textContent = '';
     $('foto').value = ''; $('fotoPrev').classList.add('oculto');
     Array.prototype.forEach.call(document.querySelectorAll('.pago'), function (x) { x.classList.remove('activo'); });
     $('zonaTransfer').classList.add('oculto'); $('ir5').disabled = true;
