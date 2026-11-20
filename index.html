@@ -118,6 +118,9 @@
   .total { font-family: 'Permanent Marker', cursive; font-size: 1.6rem; color: var(--violeta); }
 
   .ok { text-align: center; }
+  #ticketImg { width: 100%; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.18); margin: 4px 0 6px; }
+  .btn-wsp { background: #1E7A46; color: #fff; border-color: #1E7A46; }
+  #descargar { display: block; text-align: center; text-decoration: underline; }
   .ok .tilde { font-size: 4rem; line-height: 1; color: var(--verde); }
   .error { background: #FBE3E7; border: 2px solid var(--rojo); color: var(--rojo); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-weight: 600; }
   .cargando { text-align: center; padding: 30px 0; color: var(--suave); font-size: 1.1rem; }
@@ -225,6 +228,13 @@
     <h2>¡Venta guardada!</h2>
     <p class="grandes" id="okNums"></p>
     <p id="okTxt"></p>
+    <div id="zonaTicket">
+      <p class="ayuda" style="margin:14px 0 8px">Mandale su ticket a quien compró:</p>
+      <img id="ticketImg" alt="Ticket del bono" class="oculto">
+      <button class="btn btn-wsp" id="compartir">📲 Compartir ticket</button>
+      <button class="btn btn-sec" id="wsp">💬 Mandar por WhatsApp</button>
+      <a id="descargar" class="btn-link btn" download="ticket-sorteo.png" href="#">⬇ Descargar imagen</a>
+    </div>
     <button class="btn btn-principal" id="otra">Cargar otra venta</button>
   </section>
 </div>
@@ -469,7 +479,9 @@
       if (r.ok) {
         $('okNums').textContent = lista(r.numeros);
         $('okTxt').innerHTML = 'para <b>' + $('comprador').value.trim() + '</b> · ' + pesos(r.total);
+        ultima = { nums: r.numeros, comprador: $('comprador').value.trim(), telefono: $('telefono').value.trim(), vendedor: $('vendedor').value.trim() };
         ir(6);
+        armarTicket(ultima);
         return;
       }
       estado.vendidos = {}; r.vendidos.forEach(function (n) { estado.vendidos[n] = true; });
@@ -482,6 +494,114 @@
       var e = $('error'); e.classList.remove('oculto');
       e.textContent = 'No se pudo guardar: ' + (err && err.message ? err.message : 'revisá la conexión y probá de nuevo.');
     });
+  };
+
+  // ---- ticket para quien compró
+  var ultima = null, ticketBlob = null;
+  function cargarImg(src) {
+    return new Promise(function (ok) { var i = new Image(); i.onload = function () { ok(i); }; i.onerror = function () { ok(null); }; i.src = src; });
+  }
+  function armarTicket(v) {
+    $('ticketImg').classList.add('oculto'); ticketBlob = null;
+    var fuentes = ['92px "Permanent Marker"', '40px "Gloria Hallelujah"', '600 40px Poppins', '400 30px Poppins'];
+    Promise.all(fuentes.map(function (f) { return document.fonts ? document.fonts.load(f) : null; }))
+      .then(function () { return Promise.all([cargarImg('logo.png'), cargarImg('pincelada.png')]); })
+      .then(function (imgs) { dibujarTicket(v, imgs[0], imgs[1]); })
+      .catch(function () { dibujarTicket(v, null, null); });
+  }
+  function dibujarTicket(v, logo, brocha) {
+    var W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+    var x = c.getContext('2d');
+    x.fillStyle = '#E9E1D3'; x.fillRect(0, 0, W, H);
+    // tarjeta con muescas de talón
+    var m = 60, ty = 1010, r = 34;
+    x.save(); x.shadowColor = 'rgba(60,40,20,.25)'; x.shadowBlur = 30; x.shadowOffsetY = 12;
+    x.beginPath(); x.moveTo(m + 24, m); x.lineTo(W - m - 24, m); x.quadraticCurveTo(W - m, m, W - m, m + 24);
+    x.lineTo(W - m, ty - r); x.arc(W - m, ty, r, -Math.PI / 2, Math.PI / 2, true); x.lineTo(W - m, H - m - 24);
+    x.quadraticCurveTo(W - m, H - m, W - m - 24, H - m); x.lineTo(m + 24, H - m); x.quadraticCurveTo(m, H - m, m, H - m - 24);
+    x.lineTo(m, ty + r); x.arc(m, ty, r, Math.PI / 2, -Math.PI / 2, true); x.lineTo(m, m + 24); x.quadraticCurveTo(m, m, m + 24, m);
+    x.closePath(); x.fillStyle = '#FBF6EC'; x.fill(); x.restore();
+    // línea troquelada
+    x.fillStyle = '#C9BFAE'; for (var px = m + r + 20; px < W - m - r - 10; px += 26) { x.beginPath(); x.arc(px, ty, 4, 0, Math.PI * 2); x.fill(); }
+    // título sobre pincelada
+    if (brocha) x.drawImage(brocha, 300, 190, 560, 190);
+    x.fillStyle = '#1A1A1A'; x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+    x.font = '92px "Permanent Marker"'; x.fillText('SORTEO DE', W / 2, 240); x.fillText('FIN DE AÑO', W / 2, 340);
+    x.fillStyle = '#C7002A'; x.font = '40px "Gloria Hallelujah"';
+    x.fillText(v.nums.length === 1 ? 'tu número' : 'tus números', W / 2, 460);
+    // números grandes, ajustados al ancho
+    var txt = v.nums.join(' · '), tam = 190;
+    x.font = tam + 'px "Permanent Marker"';
+    while (x.measureText(txt).width > W - 2 * m - 80 && tam > 70) { tam -= 6; x.font = tam + 'px "Permanent Marker"'; }
+    var lineas = [txt];
+    if (x.measureText(txt).width > W - 2 * m - 80) {
+      lineas = []; var fila = [];
+      v.nums.forEach(function (n) { fila.push(n); if (x.measureText(fila.join(' · ')).width > W - 2 * m - 80) { fila.pop(); lineas.push(fila.join(' · ')); fila = [n]; } });
+      if (fila.length) lineas.push(fila.join(' · '));
+    }
+    x.fillStyle = '#861E92';
+    var y0 = 470 + tam * 0.95, alto = tam * 1.05;
+    if (lineas.length > 1) y0 = 470 + tam * 0.9;
+    lineas.forEach(function (l, i) { x.fillText(l, W / 2, y0 + i * alto); });
+    var yb = y0 + (lineas.length - 1) * alto + 90;
+    x.fillStyle = '#5A524A'; x.font = '400 30px Poppins'; x.fillText('a nombre de', W / 2, yb);
+    x.fillStyle = '#1A1A1A'; x.font = '600 48px Poppins';
+    var nom = v.comprador; while (x.measureText(nom).width > W - 2 * m - 60 && nom.length > 4) nom = nom.slice(0, -2) + '…';
+    x.fillText(nom, W / 2, yb + 60);
+    x.fillStyle = '#C7002A'; x.font = '38px "Gloria Hallelujah"';
+    x.fillText('sábado 12 de diciembre', W / 2, Math.min(yb + 150, 900));
+    x.fillStyle = '#5A524A'; x.font = '400 28px Poppins';
+    x.fillText('se sortea en el encuentro de fin de año', W / 2, Math.min(yb + 200, 950));
+    // talón
+    x.textAlign = 'left'; x.fillStyle = '#1A1A1A'; x.font = '600 32px Poppins';
+    x.fillText('Bono contribución · 2 x $10.000', m + 50, ty + 95);
+    x.fillStyle = '#5A524A'; x.font = '400 26px Poppins';
+    x.fillText('Lo recaudado va a la obra de ampliación', m + 50, ty + 140);
+    x.fillText('de la biblioteca. ¡Gracias por sumarte!', m + 50, ty + 176);
+    x.fillStyle = '#8C8378'; x.font = '400 22px Poppins';
+    x.fillText('Vendió: ' + v.vendedor, m + 50, ty + 225);
+    if (logo) { var lw = 220, lh = lw * logo.height / logo.width; x.drawImage(logo, W - m - 40 - lw, ty + 70, lw, lh); }
+    c.toBlob(function (b) {
+      ticketBlob = b;
+      var url = URL.createObjectURL(b);
+      $('ticketImg').src = url; $('ticketImg').classList.remove('oculto');
+      $('descargar').href = url;
+      $('descargar').download = 'ticket-sorteo-' + v.nums.join('-') + '.png';
+    }, 'image/png');
+  }
+  function textoTicket(v) {
+    return '¡Gracias por tu bono para el Sorteo de fin de año de la Biblioteca Popular Osvaldo Bayer! 💜\n' +
+      (v.nums.length === 1 ? 'Tu número: ' : 'Tus números: ') + lista(v.nums) + '\n' +
+      'Se sortea el sábado 12 de diciembre en el encuentro de fin de año. Lo recaudado va a la obra de ampliación.';
+  }
+  function telWsp(t) {
+    var d = String(t || '').replace(/\D/g, '');
+    if (d.indexOf('549') === 0 && d.length === 13) return d;
+    if (d.indexOf('54') === 0 && d.length === 12) return '549' + d.slice(2);
+    d = d.replace(/^0/, '');
+    if (d.length === 12 && d.substr(3, 2) === '15') d = d.slice(0, 3) + d.slice(5);
+    else if (d.length === 12 && d.substr(4, 2) === '15') d = d.slice(0, 4) + d.slice(6);
+    else if (d.length === 12 && d.substr(2, 2) === '15') d = d.slice(0, 2) + d.slice(4);
+    return d.length === 10 ? '549' + d : '';
+  }
+  $('compartir').onclick = function () {
+    if (!ultima) return;
+    var texto = textoTicket(ultima);
+    if (ticketBlob && navigator.canShare) {
+      var file = new File([ticketBlob], 'ticket-sorteo.png', { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], text: texto }).catch(function () {});
+        return;
+      }
+    }
+    // sin compartir nativo: descargar la imagen y abrir WhatsApp con el texto
+    $('descargar').click();
+    $('wsp').click();
+  };
+  $('wsp').onclick = function () {
+    if (!ultima) return;
+    var n = telWsp(ultima.telefono);
+    window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(textoTicket(ultima)), '_blank');
   };
 
   // ---- otra venta
