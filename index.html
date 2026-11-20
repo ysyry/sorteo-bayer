@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Venta de números · Sorteo de fin de año</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Gloria+Hallelujah&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --papel: #EFE8DC;
+    --tarjeta: #FFFDF8;
+    --tinta: #1A1A1A;
+    --suave: #5A524A;
+    --violeta: #861E92;
+    --amarillo: #EEB500;
+    --amarillo-claro: #FFE9A3;
+    --rojo: #C7002A;
+    --verde: #1E7A46;
+    --gris: #C9C2B8;
+    --borde: #D8CFC2;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 19px; }
+  body {
+    margin: 0; color: var(--tinta); font-family: Poppins, system-ui, sans-serif; line-height: 1.45;
+    background-color: var(--papel);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.025) 0 2px, transparent 2px 5px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.025) 0 2px, transparent 2px 5px);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 18px 16px 140px; }
+
+  header { text-align: left; margin: 6px 0 18px; }
+  .titulo { font-family: 'Permanent Marker', cursive; font-size: 2.1rem; line-height: 1.02; margin: 0; }
+  .titulo span { background: linear-gradient(100deg, transparent 2%, var(--amarillo) 4% 96%, transparent 98%); padding: 0 .15em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .fecha { font-family: 'Permanent Marker', cursive; color: var(--violeta); font-size: 1.15rem; margin: 8px 0 0; }
+  .sub { font-family: 'Gloria Hallelujah', cursive; color: var(--rojo); font-size: 1.05rem; margin: 2px 0 0; }
+
+  .pasos { display: flex; gap: 6px; margin: 4px 0 14px; }
+  .pasos i { flex: 1; height: 8px; border-radius: 4px; background: var(--gris); }
+  .pasos i.on { background: var(--violeta); }
+
+  .tarjeta { background: var(--tarjeta); border: 2px solid var(--borde); border-radius: 18px; padding: 20px 18px; box-shadow: 0 2px 0 rgba(0,0,0,.04); }
+  h2 { font-size: 1.35rem; margin: 0 0 4px; }
+  .num-paso { display: inline-block; background: var(--violeta); color: #fff; border-radius: 999px; width: 1.7em; height: 1.7em; text-align: center; line-height: 1.7em; font-size: .85em; margin-right: 8px; }
+  .ayuda { color: var(--suave); margin: 0 0 14px; font-size: .95rem; }
+
+  label { display: block; font-weight: 600; margin: 14px 0 6px; }
+  input[type=text], input[type=tel], input[type=number] {
+    width: 100%; font: inherit; font-size: 1.15rem; padding: 14px 14px; border: 2px solid var(--borde); border-radius: 12px; background: #fff; color: var(--tinta);
+  }
+  input:focus { outline: 3px solid var(--amarillo); border-color: var(--tinta); }
+
+  .btn { display: block; width: 100%; font: inherit; font-size: 1.15rem; font-weight: 700; padding: 16px; border-radius: 14px; border: 2px solid var(--tinta); cursor: pointer; margin-top: 16px; }
+  .btn-principal { background: var(--violeta); color: #fff; border-color: var(--violeta); }
+  .btn-principal:disabled { background: var(--gris); border-color: var(--gris); color: #fff; cursor: not-allowed; }
+  .btn-sec { background: #fff; color: var(--tinta); }
+  .btn-link { background: none; border: none; color: var(--violeta); text-decoration: underline; font-weight: 600; padding: 10px; margin-top: 8px; }
+
+  .grupos { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .grupo { text-align: left; font: inherit; font-size: 1.1rem; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--borde); background: #fff; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .grupo b { font-size: 1.15rem; }
+  .grupo small { color: var(--suave); font-size: .9rem; }
+  .grupo.activo { border-color: var(--violeta); background: #F6EAF7; box-shadow: inset 0 0 0 2px var(--violeta); }
+
+  .buscar { display: flex; gap: 8px; align-items: stretch; margin: 6px 0 4px; }
+  .buscar input { flex: 1; }
+  .buscar .btn { width: auto; margin: 0; padding: 0 18px; }
+  .resultado { min-height: 1.6em; font-weight: 700; font-size: 1.1rem; margin: 8px 0 4px; }
+  .resultado.libre { color: var(--verde); }
+  .resultado.vendido { color: var(--rojo); }
+
+  .grilla { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
+  .fila-rotulo { grid-column: 1 / -1; color: var(--suave); font-size: .85rem; font-weight: 600; margin-top: 6px; }
+  .n { font: inherit; font-size: 1.3rem; font-weight: 700; aspect-ratio: 1 / 1; border-radius: 12px; border: 2px solid var(--tinta); background: #fff; color: var(--tinta); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; }
+  .n.sel { background: var(--amarillo); box-shadow: inset 0 0 0 3px var(--tinta); }
+  .n.sel::after { content: '✓'; font-size: .8rem; line-height: 1; }
+  .n.vend { background: #E6E1DA; border-color: var(--gris); color: #9A9189; cursor: not-allowed; text-decoration: line-through; }
+  .n.vend::after { content: 'vendido'; font-size: .55rem; text-decoration: none; display: block; line-height: 1; margin-top: 2px; }
+  .n.destacado { outline: 4px solid var(--violeta); outline-offset: 2px; }
+
+  .barra { position: fixed; left: 0; right: 0; bottom: 0; background: var(--tinta); color: #fff; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 14px rgba(0,0,0,.2); }
+  .barra .in { max-width: 560px; margin: 0 auto; display: flex; gap: 12px; align-items: center; }
+  .barra .txt { flex: 1; font-size: 1rem; line-height: 1.25; }
+  .barra .txt b { color: var(--amarillo); font-size: 1.2rem; }
+  .barra .btn { width: auto; margin: 0; padding: 14px 20px; background: var(--amarillo); color: var(--tinta); border-color: var(--amarillo); }
+  .barra .btn:disabled { background: #555; border-color: #555; color: #aaa; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+  .chip { background: var(--amarillo); border: 2px solid var(--tinta); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 1.15rem; display: inline-flex; align-items: center; gap: 8px; }
+  .chip button { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 0; color: var(--tinta); }
+
+  .pagos { display: grid; gap: 12px; }
+  .pago { font: inherit; font-size: 1.2rem; font-weight: 700; padding: 20px 16px; border-radius: 16px; border: 2px solid var(--borde); background: #fff; cursor: pointer; text-align: left; display: flex; gap: 14px; align-items: center; }
+  .pago .ico { font-size: 1.8rem; }
+  .pago.activo { border-color: var(--violeta); background: #F6EAF7; box-shadow: inset 0 0 0 2px var(--violeta); }
+  .aviso { background: var(--amarillo-claro); border: 2px dashed var(--amarillo); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: .98rem; }
+  .foto { display: block; text-align: center; border: 3px dashed var(--violeta); border-radius: 16px; padding: 22px 14px; margin-top: 12px; cursor: pointer; font-weight: 700; color: var(--violeta); background: #fff; font-size: 1.1rem; }
+  .foto input { display: none; }
+  .foto img { max-width: 100%; max-height: 220px; border-radius: 10px; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
+
+  .resumen { border-collapse: collapse; width: 100%; font-size: 1.1rem; }
+  .resumen td { padding: 10px 4px; border-bottom: 1px solid var(--borde); vertical-align: top; }
+  .resumen td:first-child { color: var(--suave); width: 38%; }
+  .grandes { font-family: 'Permanent Marker', cursive; font-size: 2rem; line-height: 1.15; color: var(--tinta); }
+  .total { font-family: 'Permanent Marker', cursive; font-size: 1.6rem; color: var(--violeta); }
+
+  .ok { text-align: center; }
+  .ok .tilde { font-size: 4rem; line-height: 1; color: var(--verde); }
+  .error { background: #FBE3E7; border: 2px solid var(--rojo); color: var(--rojo); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-weight: 600; }
+  .cargando { text-align: center; padding: 30px 0; color: var(--suave); font-size: 1.1rem; }
+  .oculto { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="titulo">SORTEO DE <span>FIN DE AÑO</span></h1>
+    <p class="fecha">SÁBADO 12 DE DICIEMBRE</p>
+    <p class="sub">venta de números · bono 2 x $10.000</p>
+  </header>
+
+  <div class="pasos" id="pasos"><i></i><i></i><i></i><i></i><i></i></div>
+
+  <!-- 1 · Quién vende -->
+  <section class="tarjeta" id="p1">
+    <h2><span class="num-paso">1</span>¿Quién vende?</h2>
+    <p class="ayuda">Escribí tu nombre. Queda guardado para la próxima venta.</p>
+    <label for="vendedor">Tu nombre</label>
+    <input type="text" id="vendedor" autocomplete="name" placeholder="Ej: Laura">
+    <button class="btn btn-principal" id="ir2">Siguiente</button>
+  </section>
+
+  <!-- 2 · Números -->
+  <section class="tarjeta oculto" id="p2">
+    <h2><span class="num-paso">2</span>Elegí los números</h2>
+    <p class="ayuda">Primero tocá tu grupo. Después tocá los números que vendiste: quedan en <b style="background:var(--amarillo);padding:0 4px">amarillo</b>. Los grises ya están vendidos.</p>
+    <div class="grupos" id="grupos"></div>
+
+    <div id="zonaNumeros" class="oculto">
+      <label for="buscar">¿Buscás un número en particular?</label>
+      <div class="buscar">
+        <input type="number" id="buscar" inputmode="numeric" placeholder="Ej: 23">
+        <button class="btn btn-sec" id="btnBuscar">Buscar</button>
+      </div>
+      <div class="resultado" id="resultado"></div>
+      <div class="grilla" id="grilla"></div>
+    </div>
+    <div class="cargando" id="cargando">Cargando números…</div>
+    <button class="btn-link btn" id="volver1">← Volver</button>
+  </section>
+
+  <!-- 3 · Quién compra -->
+  <section class="tarjeta oculto" id="p3">
+    <h2><span class="num-paso">3</span>¿Quién compra?</h2>
+    <p class="ayuda">Necesitamos el teléfono para avisarle si gana.</p>
+    <label for="comprador">Nombre y apellido</label>
+    <input type="text" id="comprador" autocomplete="off" placeholder="Ej: María Pérez">
+    <label for="telefono">Teléfono</label>
+    <input type="tel" id="telefono" inputmode="tel" autocomplete="off" placeholder="Ej: 294 455-1234">
+    <button class="btn btn-principal" id="ir4">Siguiente</button>
+    <button class="btn-link btn" id="volver2">← Volver a los números</button>
+  </section>
+
+  <!-- 4 · Pago -->
+  <section class="tarjeta oculto" id="p4">
+    <h2><span class="num-paso">4</span>¿Cómo pagó?</h2>
+    <div class="pagos">
+      <button class="pago" data-pago="Transferencia al alias"><span class="ico">📱</span>Transferencia al alias</button>
+      <button class="pago" data-pago="Efectivo"><span class="ico">💵</span>Efectivo</button>
+    </div>
+    <div id="zonaTransfer" class="oculto">
+      <div class="aviso">Pedile que en el <b>concepto</b> de la transferencia ponga: <b>SORTEO + su nombre</b>.</div>
+      <label class="foto" id="fotoLabel">
+        📷 Tocá acá para sacar o elegir la foto del comprobante
+        <input type="file" id="foto" accept="image/*">
+        <img id="fotoPrev" class="oculto" alt="Comprobante">
+      </label>
+      <p class="ayuda" style="margin-top:8px">Si no la tenés ahora, podés seguir sin foto.</p>
+    </div>
+    <button class="btn btn-principal" id="ir5" disabled>Siguiente</button>
+    <button class="btn-link btn" id="volver3">← Volver</button>
+  </section>
+
+  <!-- 5 · Revisar -->
+  <section class="tarjeta oculto" id="p5">
+    <h2><span class="num-paso">5</span>Revisá antes de guardar</h2>
+    <p class="ayuda">Fijate que esté todo bien.</p>
+    <table class="resumen">
+      <tr><td>Números</td><td><div class="grandes" id="rNums"></div></td></tr>
+      <tr><td>Total</td><td><div class="total" id="rTotal"></div></td></tr>
+      <tr><td>Compra</td><td id="rComp"></td></tr>
+      <tr><td>Teléfono</td><td id="rTel"></td></tr>
+      <tr><td>Pago</td><td id="rPago"></td></tr>
+      <tr><td>Vende</td><td id="rVend"></td></tr>
+    </table>
+    <div class="error oculto" id="error"></div>
+    <button class="btn btn-principal" id="guardar">Sí, guardar la venta</button>
+    <button class="btn btn-sec" id="corregir">Corregir algo</button>
+  </section>
+
+  <!-- Listo -->
+  <section class="tarjeta oculto ok" id="p6">
+    <div class="tilde">✓</div>
+    <h2>¡Venta guardada!</h2>
+    <p class="grandes" id="okNums"></p>
+    <p id="okTxt"></p>
+    <button class="btn btn-principal" id="otra">Cargar otra venta</button>
+  </section>
+</div>
+
+<div class="barra oculto" id="barra">
+  <div class="in">
+    <div class="txt" id="barraTxt"></div>
+    <button class="btn" id="ir3" disabled>Siguiente</button>
+  </div>
+</div>
+
+<script>
+  var VENDEDOR_LINK = '';
+
+  var estado = { vendidos: {}, grupos: [], precio: 5000 };
+  var sel = [];
+  var grupoActivo = null;
+  var pago = '';
+  var fotoData = '';
+  var pasoActual = 1;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var pesos = function (n) { return '$' + n.toLocaleString('es-AR'); };
+  var lista = function (nums) {
+    if (nums.length === 1) return String(nums[0]);
+    return nums.slice(0, -1).join(', ') + ' y ' + nums[nums.length - 1];
+  };
+
+  // ---- conexión con la planilla (o modo prueba si se abre suelto)
+  var API = 'https://script.google.com/macros/s/AKfycbxovCXg4xPRCyWdGyC6q4kdR8zAsY4307ZMQnoKuZAJsdXz3GPZzJjGKJqAa7SHtu7oOQ/exec';
+  var enGoogle = !!(window.google && google.script && google.script.run);
+  var servidor = (!enGoogle && (location.protocol === 'file:' || /[?&]demo=1/.test(location.search))) ? crearPrueba() : null;
+  function llamar(fn, arg, ok, mal) {
+    if (servidor) return setTimeout(function () { try { ok(servidor[fn](arg)); } catch (e) { mal(e); } }, 300);
+    if (enGoogle) return google.script.run.withSuccessHandler(ok).withFailureHandler(mal)[fn](arg);
+    // Página publicada afuera de Google: habla con la planilla sin usar la cuenta de quien la abre.
+    var pedido = fn === 'getEstado'
+      ? fetch(API + '?api=estado', { credentials: 'omit' })
+      : fetch(API, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(arg) });
+    pedido.then(function (r) { return r.json(); })
+      .then(function (r) { if (r && r.error) mal(new Error(r.error)); else ok(r); })
+      .catch(function () { mal(new Error('revisá la conexión a internet y probá de nuevo.')); });
+  }
+  function crearPrueba() {
+    var vend = [3, 4, 7, 12, 13, 23, 41, 42, 88, 150, 201, 202, 250, 512, 777];
+    return {
+      getEstado: function () { return { vendidos: vend.slice(), grupos: [['Bibliotecarias',1,200],['Cineclub',201,400],['Experimental',401,600],['Folklore',601,800],['Archivos',801,1000]], precio: 5000 }; },
+      registrarVenta: function (d) {
+        var oc = d.numeros.filter(function (n) { return vend.indexOf(n) >= 0; });
+        if (oc.length) return { ok: false, ocupados: oc, vendidos: vend.slice() };
+        vend = vend.concat(d.numeros);
+        return { ok: true, numeros: d.numeros.slice().sort(function (a, b) { return a - b; }), total: d.numeros.length * 5000 };
+      }
+    };
+  }
+
+  function cargarEstado(cb) {
+    llamar('getEstado', null, function (r) {
+      estado.grupos = r.grupos; estado.precio = r.precio;
+      estado.vendidos = {}; r.vendidos.forEach(function (n) { estado.vendidos[n] = true; });
+      sel = sel.filter(function (n) { return !estado.vendidos[n]; });
+      $('cargando').classList.add('oculto');
+      pintarGrupos(); if (grupoActivo) pintarGrilla(); pintarBarra();
+      if (cb) cb();
+    }, function (e) { $('cargando').textContent = 'No se pudo cargar. Revisá la conexión y volvé a abrir la página.'; });
+  }
+
+  // ---- pasos
+  function ir(n) {
+    pasoActual = n;
+    for (var i = 1; i <= 6; i++) $('p' + i).classList.toggle('oculto', i !== n);
+    var marcas = $('pasos').children;
+    for (var j = 0; j < marcas.length; j++) marcas[j].classList.toggle('on', j < n);
+    $('barra').classList.toggle('oculto', n !== 2);
+    window.scrollTo(0, 0);
+  }
+
+  // ---- paso 1
+  var guardado = '';
+  try { guardado = localStorage.getItem('sorteoVendedor') || ''; } catch (e) {}
+  $('vendedor').value = VENDEDOR_LINK || guardado;
+  $('ir2').onclick = function () {
+    var v = $('vendedor').value.trim();
+    if (!v) { $('vendedor').focus(); return; }
+    try { localStorage.setItem('sorteoVendedor', v); } catch (e) {}
+    ir(2);
+  };
+
+  // ---- paso 2
+  function quedan(g) {
+    var c = 0; for (var n = g[1]; n <= g[2]; n++) if (!estado.vendidos[n]) c++; return c;
+  }
+  function pintarGrupos() {
+    var cont = $('grupos'); cont.innerHTML = '';
+    estado.grupos.forEach(function (g) {
+      var b = document.createElement('button');
+      b.className = 'grupo' + (grupoActivo && grupoActivo[0] === g[0] ? ' activo' : '');
+      b.innerHTML = '<span><b>' + g[0] + '</b><br><small>números ' + g[1] + ' al ' + g[2] + '</small></span><small>quedan ' + quedan(g) + '</small>';
+      b.onclick = function () { grupoActivo = g; pintarGrupos(); pintarGrilla(); $('zonaNumeros').classList.remove('oculto'); $('resultado').textContent = ''; setTimeout(function () { $('zonaNumeros').scrollIntoView({ behavior: 'smooth' }); }, 50); };
+      cont.appendChild(b);
+    });
+  }
+  function pintarGrilla(destacar) {
+    var g = grupoActivo, cont = $('grilla'); cont.innerHTML = '';
+    for (var n = g[1]; n <= g[2]; n++) {
+      if ((n - g[1]) % 25 === 0) {
+        var r = document.createElement('div'); r.className = 'fila-rotulo';
+        r.textContent = 'Del ' + n + ' al ' + Math.min(n + 24, g[2]); cont.appendChild(r);
+      }
+      var b = document.createElement('button');
+      b.className = 'n' + (estado.vendidos[n] ? ' vend' : '') + (sel.indexOf(n) >= 0 ? ' sel' : '') + (destacar === n ? ' destacado' : '');
+      b.textContent = n; b.id = 'n' + n;
+      b.setAttribute('aria-label', 'Número ' + n + (estado.vendidos[n] ? ', vendido' : ''));
+      if (estado.vendidos[n]) b.disabled = true;
+      (function (num) { b.onclick = function () { tocar(num); }; })(n);
+      cont.appendChild(b);
+    }
+  }
+  function tocar(n) {
+    if (estado.vendidos[n]) return;
+    var i = sel.indexOf(n);
+    if (i >= 0) sel.splice(i, 1); else sel.push(n);
+    sel.sort(function (a, b) { return a - b; });
+    var b = $('n' + n); if (b) b.classList.toggle('sel', sel.indexOf(n) >= 0);
+    pintarBarra();
+  }
+  function pintarBarra() {
+    var t = $('barraTxt');
+    if (!sel.length) { t.innerHTML = 'Tocá los números que vendiste'; $('ir3').disabled = true; return; }
+    t.innerHTML = '<b>' + lista(sel) + '</b><br>' + sel.length + (sel.length === 1 ? ' número' : ' números') + ' · ' + pesos(sel.length * estado.precio);
+    $('ir3').disabled = false;
+  }
+  function buscar() {
+    var n = parseInt($('buscar').value, 10), res = $('resultado');
+    res.className = 'resultado';
+    if (!n || n < 1 || n > 1000) { res.textContent = 'Escribí un número del 1 al 1000.'; return; }
+    var g = estado.grupos.filter(function (x) { return n >= x[1] && n <= x[2]; })[0];
+    if (estado.vendidos[n]) { res.className = 'resultado vendido'; res.textContent = '✗ El ' + n + ' ya está vendido.'; }
+    else { res.className = 'resultado libre'; res.textContent = '✓ El ' + n + ' está libre' + (g && g !== grupoActivo ? ' (es de ' + g[0] + ')' : '') + '. Tocalo para elegirlo.'; }
+    if (g && g !== grupoActivo) { grupoActivo = g; pintarGrupos(); }
+    pintarGrilla(n);
+    var b = $('n' + n); if (b) b.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  $('btnBuscar').onclick = buscar;
+  $('buscar').onkeydown = function (e) { if (e.key === 'Enter') buscar(); };
+  $('volver1').onclick = function () { ir(1); };
+  $('ir3').onclick = function () { if (sel.length) ir(3); };
+
+  // ---- paso 3
+  $('ir4').onclick = function () {
+    if (!$('comprador').value.trim()) { $('comprador').focus(); return; }
+    if ($('telefono').value.replace(/\D/g, '').length < 6) { $('telefono').focus(); return; }
+    ir(4);
+  };
+  $('volver2').onclick = function () { ir(2); };
+
+  // ---- paso 4
+  Array.prototype.forEach.call(document.querySelectorAll('.pago'), function (b) {
+    b.onclick = function () {
+      pago = b.getAttribute('data-pago');
+      Array.prototype.forEach.call(document.querySelectorAll('.pago'), function (x) { x.classList.toggle('activo', x === b); });
+      $('zonaTransfer').classList.toggle('oculto', pago !== 'Transferencia al alias');
+      $('ir5').disabled = false;
+    };
+  });
+  $('foto').onchange = function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var lector = new FileReader();
+    lector.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var max = 1400, w = img.width, h = img.height, k = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        var url = c.toDataURL('image/jpeg', 0.8);
+        fotoData = url.split(',')[1];
+        $('fotoPrev').src = url; $('fotoPrev').classList.remove('oculto');
+      };
+      img.src = lector.result;
+    };
+    lector.readAsDataURL(f);
+  };
+  $('ir5').onclick = function () {
+    if (!pago) return;
+    $('rNums').textContent = lista(sel);
+    $('rTotal').textContent = pesos(sel.length * estado.precio);
+    $('rComp').textContent = $('comprador').value.trim();
+    $('rTel').textContent = $('telefono').value.trim();
+    $('rPago').textContent = pago + (pago === 'Transferencia al alias' ? (fotoData ? ' (con comprobante)' : ' (sin comprobante)') : '');
+    $('rVend').textContent = $('vendedor').value.trim();
+    $('error').classList.add('oculto');
+    ir(5);
+  };
+  $('volver3').onclick = function () { ir(3); };
+
+  // ---- paso 5
+  $('corregir').onclick = function () { ir(2); };
+  $('guardar').onclick = function () {
+    var b = $('guardar'); b.disabled = true; b.textContent = 'Guardando…';
+    llamar('registrarVenta', {
+      vendedor: $('vendedor').value.trim(), comprador: $('comprador').value.trim(), telefono: $('telefono').value.trim(),
+      numeros: sel.slice(), pago: pago, archivo: fotoData ? { data: fotoData } : null
+    }, function (r) {
+      b.disabled = false; b.textContent = 'Sí, guardar la venta';
+      if (r.ok) {
+        $('okNums').textContent = lista(r.numeros);
+        $('okTxt').innerHTML = 'para <b>' + $('comprador').value.trim() + '</b> · ' + pesos(r.total);
+        ir(6);
+        return;
+      }
+      estado.vendidos = {}; r.vendidos.forEach(function (n) { estado.vendidos[n] = true; });
+      sel = sel.filter(function (n) { return r.ocupados.indexOf(n) < 0; });
+      var e = $('error'); e.classList.remove('oculto');
+      e.textContent = (r.ocupados.length === 1 ? 'El número ' : 'Los números ') + lista(r.ocupados) + (r.ocupados.length === 1 ? ' se vendió' : ' se vendieron') + ' recién. Tocá "Corregir algo" y elegí otro.';
+      pintarGrupos(); if (grupoActivo) pintarGrilla(); pintarBarra();
+    }, function (err) {
+      b.disabled = false; b.textContent = 'Sí, guardar la venta';
+      var e = $('error'); e.classList.remove('oculto');
+      e.textContent = 'No se pudo guardar: ' + (err && err.message ? err.message : 'revisá la conexión y probá de nuevo.');
+    });
+  };
+
+  // ---- otra venta
+  $('otra').onclick = function () {
+    sel = []; pago = ''; fotoData = '';
+    $('comprador').value = ''; $('telefono').value = ''; $('buscar').value = ''; $('resultado').textContent = '';
+    $('foto').value = ''; $('fotoPrev').classList.add('oculto');
+    Array.prototype.forEach.call(document.querySelectorAll('.pago'), function (x) { x.classList.remove('activo'); });
+    $('zonaTransfer').classList.add('oculto'); $('ir5').disabled = true;
+    cargarEstado(); ir(2);
+  };
+
+  // ---- arranque
+  function arrancar(v) {
+    if (v) { $('vendedor').value = v; try { localStorage.setItem('sorteoVendedor', v); } catch (e) {} }
+    ir($('vendedor').value.trim() ? 2 : 1);
+    cargarEstado();
+  }
+  if (enGoogle && google.script.url) {
+    google.script.url.getLocation(function (l) { arrancar((l && l.parameter && l.parameter.v) || ''); });
+  } else {
+    var q = (location.search.match(/[?&]v=([^&]*)/) || [])[1];
+    arrancar(q ? decodeURIComponent(q.replace(/\+/g, ' ')) : '');
+  }
+  setInterval(function () { if (pasoActual === 2) cargarEstado(); }, 30000);
+</script>
+</body>
+</html>
